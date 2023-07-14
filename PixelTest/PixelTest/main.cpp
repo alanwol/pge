@@ -1,6 +1,8 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
+enum class DeltaTimeMode { DeltaTime, MonitorDeltaTime };
+
 // Override base class with your custom functionality
 class Example : public olc::PixelGameEngine
 {
@@ -21,6 +23,19 @@ public:
 		return true;
 	}
 
+	float GetDeltaTime(float elapsedTime)
+	{
+		switch (_deltaTimeMode)
+		{
+		case DeltaTimeMode::DeltaTime:
+			return elapsedTime;
+		case DeltaTimeMode::MonitorDeltaTime:
+			return 1.0 / 60.0;
+		}
+
+		return 0.0;
+	}
+
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		Clear(olc::VERY_DARK_BLUE);
@@ -34,13 +49,15 @@ public:
 
 		//DrawString(20, 20, std::to_string(fElapsedTime));
 
-		_cxw += _vx * fElapsedTime;
+		float dt = GetDeltaTime(fElapsedTime);
+
+		_cxw += _vx * dt;
 
 		if ((_cxw > static_cast<float>(ScreenWidth() - 20) && _vx > 0) || (_cxw < 20.0f && _vx < 0))
 			_vx = -_vx;
 
-		//int32_t cx = static_cast<int32_t>(_cxw);
-		int32_t cx = static_cast<int32_t>(std::round(_cxw));
+		int32_t cx = static_cast<int32_t>(_cxw);
+		//int32_t cx = static_cast<int32_t>(std::round(_cxw));
 		int32_t cy = static_cast<int32_t>(_cyw);
 
 		DrawCircle( cx, cy, 20, olc::GREEN);
@@ -58,6 +75,7 @@ private:
 	float _cxw = 20;
 	float _cyw = 86;
 	std::unique_ptr<olc::Sprite> _sprite;
+	DeltaTimeMode _deltaTimeMode = DeltaTimeMode::MonitorDeltaTime;
 };
 
 int main()
