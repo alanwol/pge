@@ -1052,13 +1052,11 @@ namespace olc
 		// olc::Pixel::MASK   = Transparent if alpha is < 255
 		// olc::Pixel::ALPHA  = Full transparency
 		void SetPixelMode(Pixel::Mode m);
-		Pixel::Mode GetPixelMode();
+		Pixel::Mode GetPixelMode() const;
 		// Use a custom blend function
 		void SetPixelMode(std::function<olc::Pixel(const int x, const int y, const olc::Pixel& pSource, const olc::Pixel& pDest)> pixelMode);
 		// Change the blend factor from between 0.0f to 1.0f;
 		void SetPixelBlend(float fBlend);
-
-
 
 	public: // DRAWING ROUTINES
 		// Draws a single Pixel
@@ -1167,8 +1165,6 @@ namespace olc
 		std::string TextEntryGetString() const;
 		int32_t TextEntryGetCursor() const;
 		bool IsTextEntryEnabled() const;
-
-
 
 	private:
 		void UpdateTextEntry();
@@ -3445,7 +3441,7 @@ namespace olc
 	void PixelGameEngine::SetPixelMode(Pixel::Mode m)
 	{ nPixelMode = m; }
 
-	Pixel::Mode PixelGameEngine::GetPixelMode()
+	Pixel::Mode PixelGameEngine::GetPixelMode() const
 	{ return nPixelMode; }
 
 	void PixelGameEngine::SetPixelMode(std::function<olc::Pixel(const int x, const int y, const olc::Pixel&, const olc::Pixel&)> pixelMode)
@@ -3816,21 +3812,8 @@ namespace olc
 		m_tp2 = std::chrono::system_clock::now();
 	}
 
-
 	void PixelGameEngine::olc_CoreUpdate()
 	{
-		// Handle Timing
-		m_tp2 = std::chrono::system_clock::now();
-		std::chrono::duration<float> elapsedTime = m_tp2 - m_tp1;
-		m_tp1 = m_tp2;
-
-		// Our time per frame coefficient
-		float fElapsedTime = elapsedTime.count();
-		fLastElapsed = fElapsedTime;
-
-		if (bConsoleSuspendTime)
-			fElapsedTime = 0.0f;
-
 		// Some platforms will need to check for events
 		platform->HandleSystemEvent();
 
@@ -3875,6 +3858,18 @@ namespace olc
 			UpdateTextEntry();
 		}
 
+		// Handle Timing
+		m_tp2 = std::chrono::system_clock::now();
+		std::chrono::duration<float> elapsedTime = m_tp2 - m_tp1;
+		m_tp1 = m_tp2;
+
+		// Our time per frame coefficient
+		float fElapsedTime = elapsedTime.count();
+		fLastElapsed = fElapsedTime;
+
+		if (bConsoleSuspendTime)
+			fElapsedTime = 0.0f;
+
 		// Handle Frame Update
 		bool bExtensionBlockFrame = false;		
 		for (auto& ext : vExtensions) bExtensionBlockFrame |= ext->OnBeforeUserUpdate(fElapsedTime);
@@ -3890,8 +3885,6 @@ namespace olc
 			SetDrawTarget((uint8_t)0);
 			UpdateConsole();
 		}
-
-		
 
 		// Display Frame
 		renderer->UpdateViewport(vViewPos, vViewSize);
@@ -3930,8 +3923,6 @@ namespace olc
 				}
 			}
 		}
-
-		
 
 		// Present Graphics to screen
 		renderer->DisplayFrame();
